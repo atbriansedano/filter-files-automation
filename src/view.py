@@ -5,7 +5,9 @@ from pathlib import Path
 import json
 import os
 
-SAVE_FILE = "monitored_paths.json"
+APP_DATA_DIR = os.path.join(os.environ["APPDATA"], "FileAutomation")
+os.makedirs(APP_DATA_DIR, exist_ok=True)
+SAVE_FILE = os.path.join(APP_DATA_DIR, "monitored_paths.json")
 
 # Initializing monitoring paths
 monitored_paths = []
@@ -60,9 +62,6 @@ def delete_path(path_entry, row_frame):
     save_paths()
 
 def execute_action():
-    print("Execute button clicked")
-    print("monitored_paths:", monitored_paths)
-
     if not monitored_paths:
         messagebox.showwarning("No paths", "Add at least one folder to monitor first.")
         return
