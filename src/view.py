@@ -1,4 +1,7 @@
 import customtkinter as ctk
+from tkinter import messagebox
+from main import get_file_paths, move_files
+from pathlib import Path
 import json
 import os
 
@@ -11,11 +14,9 @@ monitored_paths = []
 ROW_COLOR_1 = "#2b2b2b"
 ROW_COLOR_2 = "#565353"
 
-
 def save_paths():
     with open(SAVE_FILE, "w") as f:
         json.dump(monitored_paths, f)
-
 
 def load_paths():
     if not os.path.exists(SAVE_FILE):
@@ -25,7 +26,6 @@ def load_paths():
             return json.load(f)
         except json.JSONDecodeError:
             return []
-
 
 def create_row(path_entry):
     row_index = len(monitored_paths) - 1
@@ -44,7 +44,6 @@ def create_row(path_entry):
     )
     delete_button.pack(side="right", padx=5)
 
-
 def add_path():
     path_entry = path_box.get()
     if path_entry.strip() == '':
@@ -54,23 +53,32 @@ def add_path():
     save_paths()
     path_box.delete(0, "end")
 
-
 def delete_path(path_entry, row_frame):
     if path_entry in monitored_paths:
         monitored_paths.remove(path_entry)
     row_frame.destroy()
     save_paths()
 
-
 def execute_action():
-    print("Executing with paths:", monitored_paths)
-    # TODO: put your actual "execute" logic here
+    print("Execute button clicked")
+    print("monitored_paths:", monitored_paths)
 
+    if not monitored_paths:
+        messagebox.showwarning("No paths", "Add at least one folder to monitor first.")
+        return
+
+    move_to_path = Path.home() / "Documents/File Automation"
+
+    try:
+        file_paths = get_file_paths(monitored_paths)
+        move_files(file_paths, move_to_path, is_date_subfolder=True, is_extension_subfolder=True)
+        messagebox.showinfo("Done", f"Moved {len(file_paths)} file(s) to {move_to_path}")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
 def on_closing():
     save_paths()
     app.destroy()
-
 
 # Create the main window
 app = ctk.CTk()
